@@ -399,29 +399,52 @@ def place(x, mask, vals, /):
     return call_origin(numpy.place, x, mask, vals, dpnp_inplace=True)
 
 
-def put(x1, ind, v, mode='raise'):
+def put(x, indices, vals, /, *, axis=None, mode="wrap"):
     """
-    Replaces specified elements of an array with given values.
+    Puts values of an array into another array along a given axis.
     For full documentation refer to :obj:`numpy.put`.
 
     Limitations
     -----------
-    Input array is supported as :obj:`dpnp.ndarray`.
-    Not supported parameter mode.
+    Parameters `x` and `indices` are supported either as :class:`dpnp.ndarray`
+    or :class:`dpctl.tensor.usm_ndarray`.
+    Parameter `indices` is supported as 1-D array of integer data type.
+    Paramenet `vals` must be broadcastable to the shape of `indices`
+    and be of the same data type as `x` if it is as :class:`dpnp.ndarray`
+    or :class:`dpctl.tensor.usm_ndarray`.
+    Parameter `mode` is supported with ``wrap``(default) and ``clip`` mode.
+    Providing parameter `axis` is optional when `x` is a 1-D array.
+    Otherwise the function will be executed sequentially on CPU.
+
+    Notes
+    -----
+    How out-of-bounds indices will be handled.
+    "wrap" - clamps indices to (-n <= i < n), then wraps negative indices.
+    "clip" - clips indices to (0 <= i < n)
     """
 
-    x1_desc = dpnp.get_dpnp_descriptor(x1, copy_when_strides=False, copy_when_nondefault_queue=False)
-    if x1_desc:
-        if mode != 'raise':
+    check_type = lambda x: isinstance(x, (dpnp_array, dpt.usm_ndarray))
+    if check_type(x) and check_type(indices):
+        if indices.ndim != 1 or not dpnp.issubdtype(indices.dtype, dpnp.integer):
             pass
-        elif type(ind) != type(v):
+        elif axis is None and x.ndim > 1:
             pass
-        elif numpy.max(ind) >= x1_desc.size or numpy.min(ind) + x1_desc.size < 0:
+        elif not mode in ("clip", "wrap"):
+            pass
+        elif check_type(vals) and x.dtype is not vals.dtype:
+            pass
+        elif not numpy.isscalar(vals) and axis is None and vals.shape not in (indices.shape, (1,)):
             pass
         else:
-            return dpnp_put(x1_desc, ind, v)
-
-    return call_origin(numpy.put, x1, ind, v, mode, dpnp_inplace=True)
+            print("DPNP")
+            dpt_array = x.get_array() if isinstance(x, dpnp_array) else x
+            dpt_indices = (
+                indices.get_array() if isinstance(indices, dpnp_array) else indices
+            )
+            dpt_vals = vals.get_array() if isinstance(vals, dpnp_array) else vals
+            return dpt.put(dpt_array, dpt_indices, dpt_vals, axis=axis, mode=mode)
+    print("NUMPY")
+    return call_origin(numpy.put, x, indices, vals, mode, dpnp_inplace=True)
 
 
 def put_along_axis(x1, indices, values, axis):

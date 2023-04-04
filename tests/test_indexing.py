@@ -206,28 +206,28 @@ def test_place3(arr, mask, vals):
     assert_array_equal(a, ia)
 
 
-@pytest.mark.parametrize("v",
-                         [0, 1, 2, 3, 4],
-                         ids=['0', '1', '2', '3', '4'])
-@pytest.mark.parametrize("ind",
-                         [0, 1, 2, 3],
-                         ids=['0', '1', '2', '3'])
-@pytest.mark.parametrize("array",
-                         [[[0, 0], [0, 0]],
-                          [[1, 2], [1, 2]],
-                          [[1, 2], [3, 4]],
-                          [[[1, 2], [3, 4]], [[1, 2], [2, 1]], [[1, 3], [3, 1]]],
-                          [[[[1, 2], [3, 4]], [[1, 2], [2, 1]]], [[[1, 3], [3, 1]], [[0, 1], [1, 3]]]]],
-                         ids=['[[0, 0], [0, 0]]',
-                              '[[1, 2], [1, 2]]',
-                              '[[1, 2], [3, 4]]',
-                              '[[[1, 2], [3, 4]], [[1, 2], [2, 1]], [[1, 3], [3, 1]]]',
-                              '[[[[1, 2], [3, 4]], [[1, 2], [2, 1]]], [[[1, 3], [3, 1]], [[0, 1], [1, 3]]]]'])
-def test_put(array, ind, v):
-    a = numpy.array(array)
+@pytest.mark.parametrize("array_dtype", get_all_dtypes())
+@pytest.mark.parametrize("indices_dtype",
+                         [numpy.int32, numpy.int64],
+                         ids=['int32', 'int64'])
+@pytest.mark.parametrize("indices",
+                         [[-2, 2],
+                          [-5, 4]],
+                         ids=['[-2, 2]',
+                              '[-5, 4]'])
+@pytest.mark.parametrize("vals",
+                         [0, [1, 2], (2, 2), dpnp.array([1,2])],
+                         ids=['0', '[1]', '(2)', '3'])
+@pytest.mark.parametrize("mode",
+                         ["clip", "wrap"],
+                         ids=['clip', 'wrap'])
+def test_put_1d(indices, vals, array_dtype, indices_dtype, mode):
+    a = numpy.array([-2, -1, 0, 1, 2], dtype=array_dtype)
     ia = dpnp.array(a)
-    numpy.put(a, ind, v)
-    dpnp.put(ia, ind, v)
+    ind = numpy.array(indices, dtype=indices_dtype)
+    iind = dpnp.array(ind)
+    numpy.put(a, ind, vals, mode=mode)
+    dpnp.put(ia, iind, vals, mode=mode)
     assert_array_equal(a, ia)
 
 
@@ -259,7 +259,8 @@ def test_put2(array, ind, v):
 def test_put3():
     a = numpy.arange(5)
     ia = dpnp.array(a)
-    dpnp.put(ia, [0, 2], [-44, -55])
+    ind = dpnp.array([0, 2])
+    dpnp.put(ia, ind, [-44, -55])
     numpy.put(a, [0, 2], [-44, -55])
     assert_array_equal(a, ia)
 
