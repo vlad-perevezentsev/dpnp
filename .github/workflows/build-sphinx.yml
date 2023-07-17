@@ -30,13 +30,13 @@ jobs:
         with:
           docker-images: false
 
-      # - name: Install Intel repository
-      #   run: |
-      #     wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-      #     sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-      #     rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-      #     sudo add-apt-repository "deb https://apt.repos.intel.com/oneapi all main"
-      #     sudo apt-get update
+      - name: Install Intel repository
+        run: |
+          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+          sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+          rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+          sudo add-apt-repository "deb https://apt.repos.intel.com/oneapi all main"
+          sudo apt-get update
 
       - name: Update libstdc++-dev
         run: |
@@ -45,11 +45,11 @@ jobs:
           sudo apt autoremove
           sudo apt install --reinstall -y gcc-9 g++-9 libstdc++-9-dev
 
-      # - name: Install Intel OneAPI
-      #   run: |
-      #     sudo apt-get install intel-oneapi-mkl                \
-      #                          intel-oneapi-mkl-devel          \
-      #                          intel-oneapi-dpcpp-cpp-compiler
+      - name: Install Intel OneAPI
+        run: |
+          sudo apt-get install intel-oneapi-mkl                \
+                               intel-oneapi-mkl-devel          \
+                               intel-oneapi-compiler-dpcpp-cpp
 
       # https://github.com/marketplace/actions/checkout
       - name: Install nvidia-cuda support drivers
