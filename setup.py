@@ -4,7 +4,7 @@ import os
 from skbuild import setup
 
 """
-Gt the project version
+Gt te project version
 """
 thefile_path = os.path.abspath(os.path.dirname(__file__))
 version_mod = imm.SourceFileLoader(
